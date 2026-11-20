@@ -20,7 +20,7 @@ Python 3.13, uv, FastAPI, Pydantic v2 + pydantic-settings, httpx, pytest + respx
   `main.py` is the composition root (like `Program.cs`).
 - `web/` demo form: plain HTML, CSS, JavaScript, served by FastAPI from the same origin.
 - `n8n/workflows/` exported workflow JSON; `n8n/init/` imports workflows and credentials into a fresh n8n.
-- `tools/` scripts: `export_workflows`, `send_sample_leads.py`.
+- `tools/` scripts: `export_workflows.py`, `airtable_setup.py` (schema as code), `set-secret.ps1` (hidden input into `.env`), `send_sample_leads.py`.
 - The intake contract is shared with the Verde Kitchen brief (`docs/phase-9-contact-form.md` there): a change goes
   into both repos.
 

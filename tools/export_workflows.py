@@ -60,7 +60,10 @@ def main() -> int:
             if workflow.get("isArchived"):
                 continue
             out = TARGET / f"{slug(workflow['name'])}.json"
-            out.write_text(json.dumps(clean(workflow), indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+            # newline="\n": LF on Windows too, like the rest of the repository.
+            out.write_text(
+                json.dumps(clean(workflow), indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n"
+            )
             print(f"exported {out.relative_to(ROOT)}")
     print("Now run: uv run pytest tests/test_workflows.py")
     return 0
