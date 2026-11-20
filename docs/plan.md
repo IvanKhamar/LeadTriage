@@ -11,12 +11,12 @@ Note: the Verde Kitchen repo is at `F:\PROJECTS\VerdeKitchen_DrupalProj` (the br
 | # | Phase | What is delivered | Needs the user | Status |
 |---|---|---|---|---|
 | 0 | Bootstrap | Both `CLAUDE.md` files, `.gitignore`, `.env.example`, README skeleton, `pyproject.toml` (uv, Python 3.13, ruff, pytest), CI (ruff + pytest + gitleaks), Dependabot, public repo `LeadTriage` | — | done |
-| 1 | Stack runs | `Dockerfile` for the app, `docker-compose.yml` (n8n pinned version + app), ports on `127.0.0.1`, `/health`, named volumes | create the n8n owner account in the UI (step by step) | done |
+| 1 | Stack runs | `Dockerfile` for the app, `docker-compose.yml` (n8n pinned version + app), ports on `127.0.0.1`, `/health`, named volumes | — (the owner account moved to phase 3: the UI is only needed to look at the workflow) | done |
 | 2 | Intake API | Both contract endpoints, Pydantic models, ProblemDetails, body limit, rate limit, honeypot, idempotency store, forwarding with retry / 503, `/api/enrich`, demo form (`web/`), security headers, tests | — | done |
-| 3 | n8n v1, mock mode | Main workflow: webhook (header auth) → normalise → enrich → mock classify → validate → respond; init step that imports workflows and credentials; `tools/export_workflows`; workflow-export test. **Contract goes live: the Verde Kitchen phase 9 can start.** | open the workflow in the UI and walk through the nodes | todo |
+| 3 | n8n v1, mock mode | Main workflow: webhook (header auth) → normalise → enrich → mock classify → validate → respond; init step that imports workflows and credentials; `tools/export_workflows`; workflow-export test. **Contract goes live: the Verde Kitchen phase 9 can start.** | create the n8n owner account, open the workflow in the UI and walk through the nodes | done |
 | 4 | Airtable | `docs/airtable-schema.md`, Airtable nodes: search by email (30 days) → create or update with history | create the base, tables, views and a scoped token | todo |
 | 5 | Real Claude | Prompt with delimiters, Messages API call, `/api/validate`, fallback to `needsReview`, tokens / cost / latency logged | put `ANTHROPIC_API_KEY` in `.env` (never in the chat) | todo |
-| 6 | Errors | Retry On Fail on HTTP / Claude / Airtable nodes, Error Trigger workflow → `Errors` table, `docs/error-handling.md`, a test for each failure path | — | done |
+| 6 | Errors | Retry On Fail on HTTP / Claude / Airtable nodes, Error Trigger workflow → `Errors` table, `docs/error-handling.md`, a test for each failure path | — | todo |
 | 7 | Notifications | "Urgent" view; optional Telegram behind `NOTIFY_TELEGRAM=true` | optional: create a Telegram bot | todo |
 | 8 | End to end with Drupal | Connect DDEV to the API, real form submissions, `docs/decisions.md` entry, screenshots | run DDEV, set the token in `.ddev/.env`, take screenshots | waits for Verde Kitchen phase 9 |
 | 9 | Polish | README (story, Mermaid diagram, run in 5 commands, design decisions, "in production I would add"), `tools/send_sample_leads.py`, tag `v1.0` | screenshots | todo |
@@ -30,9 +30,11 @@ Note: the Verde Kitchen repo is at `F:\PROJECTS\VerdeKitchen_DrupalProj` (the br
 2. **LLM-output validation lives in Python: n8n calls `POST /api/validate`** (protected by `ENRICH_TOKEN`). One
    implementation, tested with pytest, no copy in a Code node that could drift. It also computes `costUsd` from the
    token counts and the price from config.
-3. **Mock mode** is an IF node on `LLM_MODE` (`mock` → fixed valid classification; `mock-fail` → simulated failure,
-   for the error-path tests; `live` → Claude). n8n needs env access in nodes for this (`N8N_BLOCK_ENV_ACCESS_IN_NODE=false`);
-   only non-secret settings are read that way, the API key stays in a credential.
+3. **Mock mode** reads `LLM_MODE` (`mock` → fixed valid classification; `mock-fail` → simulated failure, for the
+   error-path tests; `live` → Claude, from phase 5 through an IF node in front of the mock). Phase 3 built it as one
+   Code node "LLM (mock)" followed by a no-op "LLM result" node, where the Claude branch joins later.
+   n8n needs env access in nodes for this (`N8N_BLOCK_ENV_ACCESS_IN_NODE=false`), so n8n gets only non-secret
+   settings as env vars: its encryption key arrives as a compose secret file, API keys live in credentials.
 4. **Demo without any key:** `AIRTABLE_MODE=off` skips the Airtable nodes, and the webhook answer (category,
    priority, summary, draft) is shown on the demo form. So `docker compose up` + a few commands works with no
    Anthropic and no Airtable account.
