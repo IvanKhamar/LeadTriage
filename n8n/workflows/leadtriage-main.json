@@ -1,0 +1,242 @@
+{
+  "id": "leadTriageMain01",
+  "name": "LeadTriage main",
+  "active": true,
+  "nodes": [
+    {
+      "id": "6d0a1c1e-3b7a-4c4f-9a51-0c8f6b6c1a01",
+      "name": "Lead webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "5b3f0f0e-2f7e-4a8e-bb6f-7a1d9c2e0a11",
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "leads",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ltWebhookToken01",
+          "name": "LeadTriage webhook token"
+        }
+      }
+    },
+    {
+      "id": "6d0a1c1e-3b7a-4c4f-9a51-0c8f6b6c1a02",
+      "name": "Normalise",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Clean the lead from the FastAPI app. Only the body is kept: the request headers (with the token) stay behind.\nconst lead = $json.body;\nconst oneLine = (s) => (s ?? '').replace(/\\s+/g, ' ').trim();\n// Messages keep their line breaks, but runs of spaces and empty lines shrink to one.\nconst text = (s) => (s ?? '').replace(/[ \\t]+/g, ' ').replace(/\\n\\s*\\n+/g, '\\n').trim();\nconst received = DateTime.fromISO(lead.receivedAt);\n\nreturn [{\n  json: {\n    leadId: lead.leadId,\n    source: lead.source,\n    externalId: lead.externalId ?? null,\n    receivedAt: lead.receivedAt,\n    receivedAtKyiv: received.setZone('Europe/Kyiv').toFormat('yyyy-LL-dd HH:mm'),\n    submittedAt: lead.submittedAt,\n    name: oneLine(lead.name),\n    email: oneLine(lead.email).toLowerCase(),\n    phone: lead.phone ? oneLine(lead.phone) : null,\n    message: text(lead.message),\n    locale: lead.locale,\n    pageUrl: lead.pageUrl ?? null,\n  },\n}];\n"
+      }
+    },
+    {
+      "id": "6d0a1c1e-3b7a-4c4f-9a51-0c8f6b6c1a03",
+      "name": "Enrich",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        0
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.APP_URL }}/api/enrich",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ email: $json.email, phone: $json.phone, message: $json.message }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ltAppToken000001",
+          "name": "LeadTriage app token"
+        }
+      }
+    },
+    {
+      "id": "6d0a1c1e-3b7a-4c4f-9a51-0c8f6b6c1a04",
+      "name": "LLM (mock)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Stands in for Claude: no API call, no key, no cost. LLM_MODE=mock gives a fixed valid answer,\n// LLM_MODE=mock-fail simulates an LLM that did not answer (to test the needsReview path).\nconst mode = $env.LLM_MODE || 'mock';\nif (mode === 'mock-fail') {\n  return [{ json: { rawText: '', model: 'mock', inputTokens: 0, outputTokens: 0, latencyMs: 0, llmError: 'Simulated LLM failure (LLM_MODE=mock-fail)' } }];\n}\n\nconst language = $('Enrich').first().json.languageGuess;\nconst classification = {\n  category: 'other',\n  priority: 'medium',\n  language,\n  summary: 'Mock classification: no LLM was called.',\n  replyDraft: language === 'uk'\n    ? 'Дякуємо за ваше повідомлення! Ми відповімо найближчим часом. (тестова чернетка)'\n    : 'Thank you for your message! We will get back to you soon. (mock draft)',\n  confidence: 0.9,\n};\nreturn [{ json: { rawText: JSON.stringify(classification), model: 'mock', inputTokens: 0, outputTokens: 0, latencyMs: 0, llmError: null } }];\n"
+      }
+    },
+    {
+      "id": "6d0a1c1e-3b7a-4c4f-9a51-0c8f6b6c1a05",
+      "name": "LLM result",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        880,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "6d0a1c1e-3b7a-4c4f-9a51-0c8f6b6c1a06",
+      "name": "Validate",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        0
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.APP_URL }}/api/validate",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ rawText: $json.rawText, inputTokens: $json.inputTokens, outputTokens: $json.outputTokens }) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ltAppToken000001",
+          "name": "LeadTriage app token"
+        }
+      }
+    },
+    {
+      "id": "6d0a1c1e-3b7a-4c4f-9a51-0c8f6b6c1a07",
+      "name": "Build result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// One record with everything known about the lead: the input for Airtable and the webhook answer.\nconst lead = $('Normalise').first().json;\nconst enrich = $('Enrich').first().json;\nconst llm = $('LLM result').first().json;\nconst checked = $json;\nconst c = checked.classification;\nconst needsReview = checked.needsReview || Boolean(llm.llmError);\nconst issues = llm.llmError ? [llm.llmError, ...checked.issues] : checked.issues;\n\nconst record = {\n  ...lead,\n  category: c.category,\n  priority: c.priority,\n  language: c.language,\n  summary: c.summary,\n  replyDraft: c.replyDraft,\n  confidence: c.confidence,\n  needsReview,\n  issues,\n  rawText: checked.rawText,\n  emailDomain: enrich.emailDomain,\n  freeMail: enrich.freeMail,\n  disposable: enrich.disposable,\n  phoneCountry: enrich.phoneCountry,\n  model: llm.model,\n  inputTokens: llm.inputTokens,\n  outputTokens: llm.outputTokens,\n  costUsd: checked.costUsd,\n  latencyMs: llm.latencyMs,\n};\n\nreturn [{\n  json: {\n    leadId: lead.leadId,\n    record,\n    // What the demo form shows. No personal data beyond what the visitor just typed.\n    triage: { classification: c, needsReview, issues, model: llm.model, costUsd: checked.costUsd, enrich },\n  },\n}];\n"
+      }
+    },
+    {
+      "id": "6d0a1c1e-3b7a-4c4f-9a51-0c8f6b6c1a08",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1540,
+        0
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ leadId: $json.leadId, status: 'processed', triage: $json.triage }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Lead webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalise",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalise": {
+      "main": [
+        [
+          {
+            "node": "Enrich",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enrich": {
+      "main": [
+        [
+          {
+            "node": "LLM (mock)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM (mock)": {
+      "main": [
+        [
+          {
+            "node": "LLM result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM result": {
+      "main": [
+        [
+          {
+            "node": "Validate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate": {
+      "main": [
+        [
+          {
+            "node": "Build result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build result": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

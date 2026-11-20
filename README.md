@@ -19,6 +19,23 @@ draft reply), deduplicated and written to Airtable, so a manager gets a sorted, 
 
 LeadTriage also works without Drupal: it has its own demo form and a mock LLM mode, so it runs with Docker only.
 
+## Run it (mock mode: no keys, no Drupal)
+
+Needs Docker. From the repository folder:
+
+```
+cp .env.example .env                 # fake tokens are fine for a local demo
+docker compose run --rm n8n-init     # imports the credentials (from .env) and the workflows into n8n
+docker compose up -d --build         # n8n on 127.0.0.1:5678, the app on 127.0.0.1:8000
+```
+
+Open <http://127.0.0.1:8000>, send a message, and the page shows how the workflow classified it.
+API docs: <http://127.0.0.1:8000/docs>. n8n UI: <http://127.0.0.1:5678> (create the owner account on first visit).
+`LLM_MODE=mock-fail` in `.env` (then `docker compose up -d n8n`) shows what happens when the LLM does not answer.
+
+Workflows live in `n8n/workflows/` and are the source of truth: after editing one in the n8n UI, run
+`uv run python tools/export_workflows.py` (it strips pinned data and owner info) and commit the JSON.
+
 ## Documents
 
 - [Lead intake contract](docs/lead-intake-contract.md)

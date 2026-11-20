@@ -18,6 +18,9 @@ services:
       N8N_PERSONALIZATION_ENABLED: "false"
       N8N_SECURE_COOKIE: "false"  # plain http on localhost; live, the UI is opened only through an SSH tunnel
       N8N_RUNNERS_ENABLED: "true"
+      # Executions hold lead data (and request headers): keep them 7 days only.
+      EXECUTIONS_DATA_PRUNE: "true"
+      EXECUTIONS_DATA_MAX_AGE: "168"
       # Workflows read the non-secret settings below with $env.
       N8N_BLOCK_ENV_ACCESS_IN_NODE: "false"
       APP_URL: http://app:8000
@@ -35,6 +38,23 @@ services:
       interval: 15s
       timeout: 5s
       start_period: 30s
+
+  # One-off: imports credentials (built from .env) and the workflows from n8n/workflows/, then publishes them.
+  #   docker compose run --rm n8n-init
+  n8n-init:
+    image: n8nio/n8n:2.48.7
+    profiles: [init]  # not started by `docker compose up`
+    entrypoint: ["/bin/sh", "/init/init.sh"]
+    environment:
+      N8N_ENCRYPTION_KEY_FILE: /run/secrets/n8n_encryption_key
+      WEBHOOK_TOKEN: ${WEBHOOK_TOKEN:?set WEBHOOK_TOKEN in .env}
+      ENRICH_TOKEN: ${ENRICH_TOKEN:?set ENRICH_TOKEN in .env}
+    secrets:
+      - n8n_encryption_key
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./n8n/workflows:/workflows:ro
+      - ./n8n/init:/init:ro
 
   app:
     build: .
