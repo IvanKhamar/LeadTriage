@@ -1,0 +1,33 @@
+[project]
+name = "leadtriage"
+version = "0.1.0"
+description = "AI lead triage for the Verde Kitchen contact form: n8n + FastAPI + Claude API + Airtable"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi[standard]>=0.165.0",
+    "httpx>=0.28.1",
+    "pydantic-settings>=2.16.3",
+    "tzdata>=2026.6",
+]
+
+[dependency-groups]
+dev = [
+    "faker>=40.63.0",
+    "pytest>=9.2.0",
+    "respx>=0.23.1",
+    "ruff>=0.17.6",
+]
+
+[tool.uv]
+package = false  # an application, not a library: nothing to build or publish
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+# ASYNC catches blocking calls (time.sleep, sync I/O) inside async functions.
+select = ["E", "F", "I", "UP", "B", "ASYNC"]
