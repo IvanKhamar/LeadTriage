@@ -1,0 +1,63 @@
+# LeadTriage: n8n + the FastAPI app.  Start:  cp .env.example .env ; docker compose up -d --build
+# Ports are bound to 127.0.0.1 only: nothing here is reachable from other machines.
+name: leadtriage
+
+services:
+  n8n:
+    image: n8nio/n8n:2.48.7  # pinned; update on purpose, after reading the release notes
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5678:5678"
+    environment:
+      # The key that encrypts n8n's credential store arrives as a file, not as an env var: workflows can read
+      # env vars ($env), so only non-secret settings are passed that way.
+      N8N_ENCRYPTION_KEY_FILE: /run/secrets/n8n_encryption_key
+      GENERIC_TIMEZONE: Europe/Kyiv
+      TZ: Europe/Kyiv
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      N8N_PERSONALIZATION_ENABLED: "false"
+      N8N_SECURE_COOKIE: "false"  # plain http on localhost; live, the UI is opened only through an SSH tunnel
+      N8N_RUNNERS_ENABLED: "true"
+      # Workflows read the non-secret settings below with $env.
+      N8N_BLOCK_ENV_ACCESS_IN_NODE: "false"
+      APP_URL: http://app:8000
+      LLM_MODE: ${LLM_MODE:-mock}
+      AIRTABLE_MODE: ${AIRTABLE_MODE:-off}
+      LLM_MODEL: ${LLM_MODEL:-claude-haiku-5-5}
+      LLM_MAX_TOKENS: ${LLM_MAX_TOKENS:-800}
+      NOTIFY_TELEGRAM: ${NOTIFY_TELEGRAM:-false}
+    secrets:
+      - n8n_encryption_key
+    volumes:
+      - n8n_data:/home/node/.n8n
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:5678/healthz >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      start_period: 30s
+
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8000:8000"
+    # Listed one by one: the app gets only what it needs (no Anthropic or Airtable keys).
+    environment:
+      WEBHOOK_TOKEN: ${WEBHOOK_TOKEN:?set WEBHOOK_TOKEN in .env}
+      ENRICH_TOKEN: ${ENRICH_TOKEN:?set ENRICH_TOKEN in .env}
+      SOURCE_TOKEN_VERDE_KITCHEN: ${SOURCE_TOKEN_VERDE_KITCHEN:?set SOURCE_TOKEN_VERDE_KITCHEN in .env}
+      N8N_WEBHOOK_URL: ${N8N_WEBHOOK_URL:-http://n8n:5678/webhook/leads}
+      RATE_LIMIT_PER_MINUTE: ${RATE_LIMIT_PER_MINUTE:-5}
+      LLM_PRICE_INPUT_PER_MTOK: ${LLM_PRICE_INPUT_PER_MTOK:-1.00}
+      LLM_PRICE_OUTPUT_PER_MTOK: ${LLM_PRICE_OUTPUT_PER_MTOK:-5.00}
+      DATA_DIR: /app/data
+    volumes:
+      - app_data:/app/data  # SQLite idempotency store
+
+secrets:
+  n8n_encryption_key:
+    environment: N8N_ENCRYPTION_KEY
+
+volumes:
+  n8n_data:
+  app_data:
