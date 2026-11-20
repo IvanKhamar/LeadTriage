@@ -1,3 +1,78 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><title>LeadTriage</title></head>
-<body><p>The demo form arrives in phase 2.</p></body></html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LeadTriage demo form</title>
+  <link rel="stylesheet" href="/static/form.css">
+  <script src="/static/form.js" defer></script>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <p class="eyebrow">LeadTriage · demo</p>
+      <h1>Contact Verde Kitchen</h1>
+      <p class="lead">This form stands in for the Verde Kitchen contact form. Each message is validated, enriched and
+        classified by an n8n workflow. Use invented data only, for example an <code>@example.com</code> address.</p>
+    </header>
+
+    <form id="lead-form" novalidate>
+      <div class="field">
+        <label for="name">Name</label>
+        <input id="name" name="name" autocomplete="name" required minlength="2" maxlength="100">
+        <p class="error" data-for="name">Enter 2 to 100 characters.</p>
+      </div>
+      <div class="field">
+        <label for="email">E-mail</label>
+        <input id="email" name="email" type="email" autocomplete="email" required maxlength="254">
+        <p class="error" data-for="email">Enter a valid e-mail address.</p>
+      </div>
+      <div class="field">
+        <label for="phone">Phone <span class="optional">(optional)</span></label>
+        <input id="phone" name="phone" type="tel" autocomplete="tel" maxlength="30" pattern="\+?[0-9 ()\-]{6,30}">
+        <p class="error" data-for="phone">Digits, spaces, brackets and an optional leading +.</p>
+      </div>
+      <div class="field">
+        <label for="message">Message</label>
+        <textarea id="message" name="message" rows="5" required minlength="10" maxlength="2000"></textarea>
+        <p class="hint"><span id="message-count">0</span> / 2000</p>
+        <p class="error" data-for="message">Write 10 to 2000 characters.</p>
+      </div>
+      <div class="field">
+        <label for="locale">Language of the site</label>
+        <select id="locale" name="locale">
+          <option value="en">English</option>
+          <option value="uk">Українська</option>
+        </select>
+      </div>
+      <!-- Honeypot: hidden from people, bots fill it in. A filled one is accepted and silently dropped. -->
+      <div class="trap" aria-hidden="true">
+        <label for="website">Website</label>
+        <input id="website" name="website" tabindex="-1" autocomplete="off">
+      </div>
+      <div class="field check">
+        <input id="consent" name="consent" type="checkbox" required>
+        <label for="consent">I agree that my message is processed to answer me.</label>
+        <p class="error" data-for="consent">Please agree, or we cannot answer.</p>
+      </div>
+      <button type="submit" id="submit">Send</button>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+    </form>
+
+    <section id="result" class="result" hidden>
+      <h2>How LeadTriage sorted it</h2>
+      <dl>
+        <dt>Category</dt><dd id="r-category"></dd>
+        <dt>Priority</dt><dd id="r-priority"></dd>
+        <dt>Language</dt><dd id="r-language"></dd>
+        <dt>Confidence</dt><dd id="r-confidence"></dd>
+        <dt>Needs review</dt><dd id="r-review"></dd>
+        <dt>Summary</dt><dd id="r-summary"></dd>
+        <dt>Draft reply</dt><dd id="r-reply"></dd>
+      </dl>
+      <p class="hint">Lead id <code id="r-id"></code>. The draft is only a draft: a person reviews it before anything is
+        sent.</p>
+    </section>
+  </main>
+</body>
+</html>
