@@ -1,0 +1,18 @@
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.env
+.idea/
+.vscode/
+# n8n data (database, encryption key, credentials) and the app's idempotency store
+.n8n/
+data/
+*.sqlite
+*.sqlite3
+*.db
+# exports and generated files that may hold lead data
+exports/
+*.csv
