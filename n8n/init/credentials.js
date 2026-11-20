@@ -25,6 +25,14 @@ const credentials = [
     type: "httpHeaderAuth",
     data: { name: "X-Enrich-Token", value: required("ENRICH_TOKEN") },
   },
+  {
+    // Always created, so the workflow can be published without an Airtable account. With AIRTABLE_MODE=off the
+    // Airtable nodes never run; with a placeholder token and AIRTABLE_MODE=on, Airtable answers 401.
+    id: "ltAirtable000001",
+    name: "LeadTriage Airtable token",
+    type: "airtableTokenApi",
+    data: { accessToken: process.env.AIRTABLE_TOKEN || "not-set" },
+  },
 ];
 
 process.stdout.write(JSON.stringify(credentials));

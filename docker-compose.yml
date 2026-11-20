@@ -29,6 +29,7 @@ services:
       LLM_MODEL: ${LLM_MODEL:-claude-haiku-5-5}
       LLM_MAX_TOKENS: ${LLM_MAX_TOKENS:-800}
       NOTIFY_TELEGRAM: ${NOTIFY_TELEGRAM:-false}
+      AIRTABLE_BASE_ID: ${AIRTABLE_BASE_ID:-}
     secrets:
       - n8n_encryption_key
     volumes:
@@ -49,6 +50,7 @@ services:
       N8N_ENCRYPTION_KEY_FILE: /run/secrets/n8n_encryption_key
       WEBHOOK_TOKEN: ${WEBHOOK_TOKEN:?set WEBHOOK_TOKEN in .env}
       ENRICH_TOKEN: ${ENRICH_TOKEN:?set ENRICH_TOKEN in .env}
+      AIRTABLE_TOKEN: ${AIRTABLE_TOKEN:-}  # optional: only needed with AIRTABLE_MODE=on
     secrets:
       - n8n_encryption_key
     volumes:

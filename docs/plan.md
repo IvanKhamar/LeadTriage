@@ -14,7 +14,7 @@ Note: the Verde Kitchen repo is at `F:\PROJECTS\VerdeKitchen_DrupalProj` (the br
 | 1 | Stack runs | `Dockerfile` for the app, `docker-compose.yml` (n8n pinned version + app), ports on `127.0.0.1`, `/health`, named volumes | — (the owner account moved to phase 3: the UI is only needed to look at the workflow) | done |
 | 2 | Intake API | Both contract endpoints, Pydantic models, ProblemDetails, body limit, rate limit, honeypot, idempotency store, forwarding with retry / 503, `/api/enrich`, demo form (`web/`), security headers, tests | — | done |
 | 3 | n8n v1, mock mode | Main workflow: webhook (header auth) → normalise → enrich → mock classify → validate → respond; init step that imports workflows and credentials; `tools/export_workflows`; workflow-export test. **Contract goes live: the Verde Kitchen phase 9 can start.** | create the n8n owner account, open the workflow in the UI and walk through the nodes | done |
-| 4 | Airtable | `docs/airtable-schema.md`, Airtable nodes: search by email (30 days) → create or update with history | create the base, tables, views and a scoped token | todo |
+| 4 | Airtable | `docs/airtable-schema.md`, `tools/airtable_setup.py` (schema as code), Airtable nodes: search by email (30 days) → create or update with history | create the base, tables, views and a scoped token | done (views made by hand) |
 | 5 | Real Claude | Prompt with delimiters, Messages API call, `/api/validate`, fallback to `needsReview`, tokens / cost / latency logged | put `ANTHROPIC_API_KEY` in `.env` (never in the chat) | todo |
 | 6 | Errors | Retry On Fail on HTTP / Claude / Airtable nodes, Error Trigger workflow → `Errors` table, `docs/error-handling.md`, a test for each failure path | — | todo |
 | 7 | Notifications | "Urgent" view; optional Telegram behind `NOTIFY_TELEGRAM=true` | optional: create a Telegram bot | todo |
@@ -50,8 +50,12 @@ Note: the Verde Kitchen repo is at `F:\PROJECTS\VerdeKitchen_DrupalProj` (the br
    `.ddev/docker-compose.leads.yaml`), because the live server uses the same idea; fall back to
    `host.docker.internal`. Checked with a real request in phase 8, written to `docs/decisions.md`.
 9. **Sample data:** Faker plus hand-written texts, only `example.com` addresses.
+10. **Airtable schema as code** (decided in phase 4): `tools/airtable_setup.py` creates both tables through the
+    Airtable API instead of 33 fields by hand. It needs `schema.bases:write` once; the scope is removed afterwards.
+    Views stay manual, because the API cannot create them.
+11. **Secrets into `.env` without an editor:** `tools/set-secret.ps1` reads a value with hidden input and writes it
+    into `.env`, so it never shows on screen, in the shell history or in the chat.
 
 ## Questions for the user
 
-None that block phase 0. Phase 4 needs a free Airtable account and phase 5 an Anthropic API key with a little credit;
-both are only needed then.
+None open. Phase 5 needs an Anthropic API key with a little credit (set with `tools/set-secret.ps1`).
