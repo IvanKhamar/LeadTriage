@@ -27,7 +27,7 @@ services:
       LLM_MODE: ${LLM_MODE:-mock}
       AIRTABLE_MODE: ${AIRTABLE_MODE:-off}
       LLM_MODEL: ${LLM_MODEL:-claude-haiku-5-5}
-      LLM_MAX_TOKENS: ${LLM_MAX_TOKENS:-800}
+      LLM_MAX_TOKENS: ${LLM_MAX_TOKENS:-2000}
       NOTIFY_TELEGRAM: ${NOTIFY_TELEGRAM:-false}
       AIRTABLE_BASE_ID: ${AIRTABLE_BASE_ID:-}
     secrets:
@@ -51,6 +51,7 @@ services:
       WEBHOOK_TOKEN: ${WEBHOOK_TOKEN:?set WEBHOOK_TOKEN in .env}
       ENRICH_TOKEN: ${ENRICH_TOKEN:?set ENRICH_TOKEN in .env}
       AIRTABLE_TOKEN: ${AIRTABLE_TOKEN:-}  # optional: only needed with AIRTABLE_MODE=on
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}  # optional: only needed with LLM_MODE=live
     secrets:
       - n8n_encryption_key
     volumes:
@@ -70,8 +71,8 @@ services:
       SOURCE_TOKEN_VERDE_KITCHEN: ${SOURCE_TOKEN_VERDE_KITCHEN:?set SOURCE_TOKEN_VERDE_KITCHEN in .env}
       N8N_WEBHOOK_URL: ${N8N_WEBHOOK_URL:-http://n8n:5678/webhook/leads}
       RATE_LIMIT_PER_MINUTE: ${RATE_LIMIT_PER_MINUTE:-5}
-      LLM_PRICE_INPUT_PER_MTOK: ${LLM_PRICE_INPUT_PER_MTOK:-1.00}
-      LLM_PRICE_OUTPUT_PER_MTOK: ${LLM_PRICE_OUTPUT_PER_MTOK:-5.00}
+      LLM_PRICE_INPUT_PER_MTOK: ${LLM_PRICE_INPUT_PER_MTOK:-0.10}
+      LLM_PRICE_OUTPUT_PER_MTOK: ${LLM_PRICE_OUTPUT_PER_MTOK:-0.50}
       DATA_DIR: /app/data
     volumes:
       - app_data:/app/data  # SQLite idempotency store

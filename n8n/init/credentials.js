@@ -33,6 +33,14 @@ const credentials = [
     type: "airtableTokenApi",
     data: { accessToken: process.env.AIRTABLE_TOKEN || "not-set" },
   },
+  {
+    // Same idea: with LLM_MODE=mock the Claude node never runs; a placeholder key gets a 401 from Anthropic,
+    // which the workflow handles like any Claude failure (the lead is saved with needsReview).
+    id: "ltAnthropicKey01",
+    name: "LeadTriage Anthropic key",
+    type: "httpHeaderAuth",
+    data: { name: "x-api-key", value: process.env.ANTHROPIC_API_KEY || "not-set" },
+  },
 ];
 
 process.stdout.write(JSON.stringify(credentials));

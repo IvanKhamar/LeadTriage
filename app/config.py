@@ -16,17 +16,17 @@ class Settings(BaseSettings):
     source_token_verde_kitchen: SecretStr = SecretStr("")
 
     n8n_webhook_url: str = "http://localhost:5678/webhook/leads"
-    # Connect timeout is short (n8n is next door); the read timeout covers the whole workflow, Claude included.
+    # Connect timeout is short (n8n is next door); the read timeout covers the whole workflow, Claude and its retries included.
     forward_connect_timeout_s: float = 3.0
-    forward_read_timeout_s: float = 30.0
+    forward_read_timeout_s: float = 60.0
 
     rate_limit_per_minute: int = 5
     max_body_bytes: int = 16 * 1024
 
     data_dir: Path = Path("data")
 
-    llm_price_input_per_mtok: float = 1.00
-    llm_price_output_per_mtok: float = 5.00
+    llm_price_input_per_mtok: float = 0.10
+    llm_price_output_per_mtok: float = 0.50
 
     def source_tokens(self) -> dict[str, SecretStr]:
         """Known server-to-server sources and their tokens. A new source = a new setting + a line here."""
