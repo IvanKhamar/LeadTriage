@@ -30,6 +30,7 @@ services:
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash-lite}
       LLM_MAX_TOKENS: ${LLM_MAX_TOKENS:-2000}
       NOTIFY_TELEGRAM: ${NOTIFY_TELEGRAM:-false}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
       AIRTABLE_BASE_ID: ${AIRTABLE_BASE_ID:-}
     secrets:
       - n8n_encryption_key
@@ -54,6 +55,7 @@ services:
       AIRTABLE_TOKEN: ${AIRTABLE_TOKEN:-}  # optional: only needed with AIRTABLE_MODE=on
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}  # optional: only needed with LLM_MODE=claude
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}  # optional: only needed with LLM_MODE=gemini
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}  # optional: only needed with NOTIFY_TELEGRAM=true
     secrets:
       - n8n_encryption_key
     volumes:
