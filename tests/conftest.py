@@ -24,6 +24,9 @@ def settings(tmp_path) -> Settings:
         n8n_webhook_url=N8N_URL,
         data_dir=tmp_path,
         rate_limit_per_minute=5,
+        # Round test prices, independent of the real defaults in config.py.
+        llm_price_input_per_mtok=1.0,
+        llm_price_output_per_mtok=5.0,
     )
 
 

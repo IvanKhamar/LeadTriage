@@ -31,7 +31,10 @@ docker compose up -d --build         # n8n on 127.0.0.1:5678, the app on 127.0.0
 
 Open <http://127.0.0.1:8000>, send a message, and the page shows how the workflow classified it.
 API docs: <http://127.0.0.1:8000/docs>. n8n UI: <http://127.0.0.1:5678> (create the owner account on first visit).
-`LLM_MODE=mock-fail` in `.env` (then `docker compose up -d n8n`) shows what happens when the LLM does not answer.
+`LLM_MODE` in `.env` picks who classifies: `mock` (default, no key), `gemini` (free key from Google AI Studio), `claude`
+(Anthropic key), or `mock-fail` (shows what happens when the LLM does not answer); then `docker compose up -d n8n`.
+Keys go into `.env` with `powershell -ExecutionPolicy Bypass -File tools\set-secret.ps1 GEMINI_API_KEY` (hidden input),
+then `docker compose run --rm n8n-init`. `uv run python tools/send_sample_leads.py` sends 12 invented leads.
 
 Workflows live in `n8n/workflows/` and are the source of truth: after editing one in the n8n UI, run
 `uv run python tools/export_workflows.py` (it strips pinned data and owner info) and commit the JSON.

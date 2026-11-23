@@ -145,11 +145,5 @@ def enrich_lead(body: EnrichIn) -> EnrichOut:
     summary="Validate the LLM classification and compute its cost (called by n8n)",
 )
 def validate_classification(request: Request, body: ValidateIn) -> ValidateOut:
-    settings = settings_of(request)
-    return classification.validate(
-        body.raw_text,
-        body.input_tokens,
-        body.output_tokens,
-        settings.llm_price_input_per_mtok,
-        settings.llm_price_output_per_mtok,
-    )
+    price_in, price_out = settings_of(request).prices(body.provider)
+    return classification.validate(body.raw_text, body.input_tokens, body.output_tokens, price_in, price_out)

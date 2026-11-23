@@ -82,3 +82,12 @@ def test_validate_endpoint(client):
     assert response.json()["classification"]["replyDraft"].startswith("Добрий")
     assert response.json()["needsReview"] is False
     assert response.json()["costUsd"] == 0.002
+
+
+@pytest.mark.parametrize(("provider", "cost"), [("claude", 0.002), ("gemini", 0.0), ("mock", 0.0)])
+def test_cost_depends_on_who_answered(client, provider, cost):
+    body = {"provider": provider, "rawText": json.dumps(GOOD), "inputTokens": 1000, "outputTokens": 200}
+
+    response = client.post("/api/validate", json=body, headers={"X-Enrich-Token": ENRICH_TOKEN})
+
+    assert response.json()["costUsd"] == cost  # test settings: Claude 1/5 USD, Gemini free tier 0
