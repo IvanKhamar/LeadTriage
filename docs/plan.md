@@ -19,8 +19,9 @@ Note: the Verde Kitchen repo is at `F:\PROJECTS\VerdeKitchen_DrupalProj` (the br
 | 6 | Errors | Retry On Fail on HTTP / Claude / Airtable nodes, Error Trigger workflow → `Errors` table, `docs/error-handling.md`, a test for each failure path | — | done (drills in `docs/error-handling.md`) |
 | 7 | Notifications | "Urgent" view; optional Telegram behind `NOTIFY_TELEGRAM=true` | optional: create a Telegram bot | done in code (`docs/notifications.md`); views made by the user |
 | 8 | End to end with Drupal | Connect DDEV to the API, real form submissions, `docs/decisions.md` entry, screenshots | run DDEV, set the token in `.ddev/.env`, take screenshots | done (`docs/decisions.md`); screenshots in phase 9 |
-| 9 | Polish | README (story, Mermaid diagram, run in 5 commands, design decisions, "in production I would add"), `tools/send_sample_leads.py`, tag `v1.0` | screenshots | todo |
-| 10 | Live on Oracle | Separate compose project on the Verde Kitchen VM, arm64 image, shared network, no public ports, daily LLM budget, retention, Airtable limit check, `docs/deployment.md` | server steps one by one, in Ukrainian | waits for Verde Kitchen phase 8.6 |
+| 9 | Polish | README (story, Mermaid diagram, run in 3 commands, design decisions, "in production I would add"), `tools/send_sample_leads.py` | — | done |
+| 9b | Screenshots and `v1.0` | The user saves 5 PNGs into `docs/screenshots/`: `contact-form.png` (Verde Kitchen `/uk/contact`), `airtable-urgent.png` (Leads, view Urgent), `airtable-lead.png` (one expanded record: category, summary, draft), `n8n-workflow.png` (LeadTriage main canvas), `demo-form-result.png` (demo form with the classification). Claude checks them (invented data only, no credentials page or `.env` visible), adds a "Screenshots" section to the README, then tags `v1.0` | take the screenshots | todo |
+| 10 | Live on Oracle | Separate compose project on the Verde Kitchen VM, arm64 image, shared network, no public ports, daily LLM budget, retention, Airtable limit check, `docs/deployment.md`. Generate real random `WEBHOOK_TOKEN`, `ENRICH_TOKEN` and `N8N_ENCRYPTION_KEY` on the server (locally they are still the `.env.example` placeholders); real visitors need Claude or a paid Gemini tier | server steps one by one, in Ukrainian | waits for Verde Kitchen phase 8.6 |
 
 ## Decisions the brief leaves open (proposed)
 

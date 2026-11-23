@@ -33,9 +33,10 @@ Run on 2026-11-23 with DDEV, LeadTriage in Docker, `LLM_MODE=gemini`, `AIRTABLE_
 | LeadTriage app stopped, message sent from `/contact` (a torn bag in an order) | saved as message 15, `pending`; the queue run fails and Drupal schedules the next attempt (about a minute later, growing towards a day) |
 | App started again, next queue run after the due time | sent; Airtable: `order_issue`, `high`, `en` |
 
-Notes for the Verde Kitchen side (not changed here):
-- `https://verde-kitchen.ddev.site` answered 502 from the DDEV router during the test; `http://` worked. Most likely
-  the local certificate (`mkcert -install`); it does not affect the server-to-server call.
-- Its README says messages are sorted "with Claude"; the local demo now uses Gemini's free tier
-  (`LLM_MODE=gemini`), with Claude ready for a key.
-- In this shell, `ddev drush` failed ("Git Bash is not installed in standard locations"); `ddev exec drush ...` works.
+Notes from the run:
+- `https://verde-kitchen.ddev.site` answered 502 once while DDEV reported itself "unhealthy"; a few minutes later
+  https answered 200 on every page. A passing router state, not a site problem; the server-to-server call uses
+  plain http inside Docker anyway.
+- `ddev drush` failed with "unknown command": DDEV needs Git Bash in `C:\Program Files\Git`, and Git on this machine
+  lives elsewhere. `ddev exec drush ...` works. Verde Kitchen's README now says so, and no longer says "with Claude"
+  ([verde-kitchen-drupal#25](https://github.com/IvanKhamar/verde-kitchen-drupal/pull/25)).
