@@ -71,6 +71,8 @@ class EnrichOut(CamelModel):
 
 
 class ValidateIn(CamelModel):
+    # Who answered: decides which prices apply (mock costs nothing).
+    provider: Literal["claude", "gemini", "mock"] = "claude"
     raw_text: str = Field(max_length=20000)
     input_tokens: int = Field(default=0, ge=0)
     output_tokens: int = Field(default=0, ge=0)

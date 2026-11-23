@@ -1,6 +1,8 @@
 # Sets one variable in the git-ignored .env without showing the value on screen, in the shell history or in a chat.
 #   powershell -ExecutionPolicy Bypass -File tools\set-secret.ps1 AIRTABLE_TOKEN
 param([Parameter(Mandatory = $true)][string]$Name)
+# .env names are upper case; accepting any case keeps the command usable where capitals get lost while typing.
+$Name = $Name.ToUpperInvariant()
 
 $envFile = Join-Path (Split-Path $PSScriptRoot -Parent) '.env'
 if (-not (Test-Path $envFile)) {

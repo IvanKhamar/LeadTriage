@@ -41,6 +41,12 @@ const credentials = [
     type: "httpHeaderAuth",
     data: { name: "x-api-key", value: process.env.ANTHROPIC_API_KEY || "not-set" },
   },
+  {
+    id: "ltGeminiKey00001",
+    name: "LeadTriage Gemini key",
+    type: "httpHeaderAuth",
+    data: { name: "x-goog-api-key", value: process.env.GEMINI_API_KEY || "not-set" },
+  },
 ];
 
 process.stdout.write(JSON.stringify(credentials));
