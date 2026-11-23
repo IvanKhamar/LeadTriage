@@ -1,0 +1,144 @@
+{
+  "id": "leadTriageErrors",
+  "name": "LeadTriage errors",
+  "active": true,
+  "nodes": [
+    {
+      "id": "7e1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c01",
+      "name": "On workflow error",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "7e1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c02",
+      "name": "Error record",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// What a person needs to find the failure in n8n's Executions list. No payload and no secrets: only names,\n// the error message (e-mail addresses masked, cut to 500 characters), the execution id and the time.\nconst e = $json;\nconst message = String(e.execution?.error?.message ?? 'unknown error')\n  .replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}/g, '[e-mail]')\n  .slice(0, 500);\n\nreturn [{\n  json: {\n    Workflow: e.workflow?.name ?? 'unknown',\n    Node: e.execution?.lastNodeExecuted ?? e.execution?.error?.node?.name ?? '',\n    Message: message,\n    ExecutionId: String(e.execution?.id ?? ''),\n    OccurredAt: new Date().toISOString(),\n  },\n}];\n"
+      }
+    },
+    {
+      "id": "7e1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c03",
+      "name": "Airtable on?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7e1b2c3d-4e5f-4a6b-8c7d-9e0f1a2bc0de",
+              "leftValue": "={{ $env.AIRTABLE_MODE }}",
+              "rightValue": "on",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "7e1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c04",
+      "name": "Save to Errors",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        660,
+        0
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $env.AIRTABLE_BASE_ID }}"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "id",
+          "value": "Errors"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "ltAirtable000001",
+          "name": "LeadTriage Airtable token"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "On workflow error": {
+      "main": [
+        [
+          {
+            "node": "Error record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error record": {
+      "main": [
+        [
+          {
+            "node": "Airtable on?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable on?": {
+      "main": [
+        [
+          {
+            "node": "Save to Errors",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
