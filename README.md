@@ -47,6 +47,26 @@ flowchart LR
 3. n8n runs the workflow; FastAPI does the parts that deserve unit tests (enrichment, checking the LLM's answer).
 4. Failures are retried; what still fails is logged to the `Errors` table, and the source tries again later.
 
+## Screenshots
+
+| Verde Kitchen contact form (Drupal) | LeadTriage demo form with the result |
+|---|---|
+| ![Verde Kitchen contact form](docs/screenshots/contact-form.png) | ![Demo form showing how a message was classified](docs/screenshots/demo-form-result.png) |
+
+**Airtable, view "Urgent":** high-priority leads that nobody has handled yet, newest first.
+
+![Airtable Leads table, Urgent view](docs/screenshots/airtable-urgent.png)
+
+**One lead in Airtable:** category, priority, summary and a draft reply, plus the enrichment, the model, tokens,
+cost and latency.
+
+<img src="docs/screenshots/airtable-lead.png" alt="One lead record in Airtable" width="420">
+
+**The n8n workflow:** webhook → normalise → enrich → Gemini, Claude or mock → validate → Airtable (find, create or
+update) → respond → optional Telegram alert.
+
+![The LeadTriage main workflow in n8n](docs/screenshots/n8n-workflow.png)
+
 ## Run it
 
 Needs Docker. No keys and no Drupal needed: the default `LLM_MODE=mock` answers without an LLM.
