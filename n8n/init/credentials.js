@@ -47,6 +47,13 @@ const credentials = [
     type: "httpHeaderAuth",
     data: { name: "x-goog-api-key", value: process.env.GEMINI_API_KEY || "not-set" },
   },
+  {
+    // Only used with NOTIFY_TELEGRAM=true; a failed alert never fails the lead.
+    id: "ltTelegramBot001",
+    name: "LeadTriage Telegram bot",
+    type: "telegramApi",
+    data: { accessToken: process.env.TELEGRAM_BOT_TOKEN || "not-set" },
+  },
 ];
 
 process.stdout.write(JSON.stringify(credentials));
