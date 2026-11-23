@@ -41,5 +41,5 @@ Workflows live in `n8n/workflows/` and are the source of truth: after editing on
 
 ## Documents
 
-- [Lead intake contract](docs/lead-intake-contract.md) · [Error handling](docs/error-handling.md) · [Airtable schema](docs/airtable-schema.md) · [Notifications](docs/notifications.md)
+- [Lead intake contract](docs/lead-intake-contract.md) · [Error handling](docs/error-handling.md) · [Airtable schema](docs/airtable-schema.md) · [Notifications](docs/notifications.md) · [Decisions: Drupal connection, end to end](docs/decisions.md)
 - [Plan](docs/plan.md) · [Brief](docs/brief.md)
