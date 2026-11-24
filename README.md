@@ -3,7 +3,8 @@
 [![CI](https://github.com/IvanKhamar/LeadTriage/actions/workflows/ci.yml/badge.svg)](https://github.com/IvanKhamar/LeadTriage/actions/workflows/ci.yml)
 
 AI lead triage for the contact form of [Verde Kitchen](https://github.com/IvanKhamar/verde-kitchen-drupal), an
-invented healthy food and drinks brand. **n8n + Python (FastAPI) + an LLM (Gemini or Claude) + Airtable.**
+invented healthy food and drinks brand. **n8n + Python (FastAPI) + an LLM (Gemini; a Claude branch is built in) +
+Airtable.**
 
 ## The story
 
@@ -126,8 +127,19 @@ More: [plan and all decisions](docs/plan.md) · [error handling](docs/error-hand
 ## Stack
 
 Python 3.13, uv, FastAPI, Pydantic v2, httpx, pytest + respx, ruff · n8n 2.48 (self-hosted, Docker) ·
-Gemini (`gemini-3.5-flash-lite`) or Claude (`claude-haiku-5-5`) · Airtable · plain HTML/CSS/JS demo form ·
+Gemini (`gemini-3.5-flash-lite`, tested) or Claude (`claude-haiku-5-5`) · Airtable · plain HTML/CSS/JS demo form ·
 Docker Compose, ports on `127.0.0.1` only.
+
+**Claude status:** the Claude branch is built and shares the prompt, schema and validation with Gemini, but it has
+not yet run with a real API key; only its failure path is tested (no key → the lead is saved with Needs review).
+Running the 12 sample leads through both models for a comparison table is the next step.
+
+## How it was built
+
+Built with [Claude Code](https://claude.com/claude-code) as an AI pair programmer. I wrote the brief, chose the
+design, reviewed every change, and tested it: unit tests, failure drills on the running stack, and an end-to-end
+run with the real Verde Kitchen contact form. The work is visible step by step in the
+[pull requests](https://github.com/IvanKhamar/LeadTriage/pulls?q=is%3Apr).
 
 Workflows live in `n8n/workflows/` and are the source of truth: after editing one in the n8n UI, run
 `uv run python tools/export_workflows.py` and commit the JSON.
